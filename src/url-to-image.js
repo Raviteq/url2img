@@ -53,6 +53,9 @@ function renderPage(opts) {
         log('Page error:', err);
     };
 
+    page.onConsoleMessage = function(msg, lineNum, sourceId) {
+      log('CONSOLE: ' + msg + ' (from line #' + lineNum + ' in "' + sourceId + '")');
+    };
 
     page.onResourceRequested = function (request) {
         log('->', request.method, request.url);
