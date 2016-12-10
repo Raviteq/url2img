@@ -16,6 +16,7 @@ var defaultOpts = {
     cropHeight: false,
     cropOffsetLeft: 0,
     cropOffsetTop: 0,
+    timestamps: false,
     phantomArguments: '--ignore-ssl-errors=true'
 };
 
@@ -104,6 +105,11 @@ function getUserOpts() {
     .option('verbose', {
         describe: 'If set, script will output additional information to stdout.',
         default: defaultOpts.verbose,
+        type: 'boolean'
+    })
+    .option('timestamps', {
+        describe: 'Show millisecond timestamps in log events.',
+        default: defaultOpts.timestamps,
         type: 'boolean'
     })
     .help('h')
