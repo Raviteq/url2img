@@ -26,8 +26,8 @@ function main() {
         cropWidth: args[10],
         cropHeight: args[11],
         cropOffsetLeft: args[12] ? args[12] : 0,
-        cropOffsetTop: args[13] ? args[13] : 0
-
+        cropOffsetTop: args[13] ? args[13] : 0,
+        timestamps: args[14] ? args[14] : 0,
     };
 
     renderPage(opts);
@@ -35,12 +35,12 @@ function main() {
 }
 
 function renderPage(opts) {
+    var startTime = Date.now();
     var requestCount = 0;
     var forceRenderTimeout;
     var dynamicRenderTimeout;
     var firstResponseFlag = false;
     var successCallbacks = 0;
-
     var page = webPage.create();
     page.viewportSize = {
         width: opts.width,
@@ -53,6 +53,9 @@ function renderPage(opts) {
         log('Page error:', err);
     };
 
+    page.onConsoleMessage = function(msg, lineNum, sourceId) {
+      log('CONSOLE: ' + msg + ' (from line #' + lineNum + ' in "' + sourceId + '")');
+    };
 
     page.onResourceRequested = function (request) {
         log('->', request.method, request.url);
@@ -111,8 +114,14 @@ function renderPage(opts) {
                 str += ' '
             });
 
+            if(opts.timestamps === 'true') str = (getElapsedTime() / 1000).toFixed(3) + ': ' + str;
+
             console.log(str);
         }
+    }
+
+    function getElapsedTime() {
+        return Date.now() - startTime;
     }
 
     function beginRenderAndExit() {

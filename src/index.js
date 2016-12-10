@@ -33,7 +33,8 @@ function render(url, filePath, opts) {
         opts.cropWidth,
         opts.cropHeight,
         opts.cropOffsetLeft,
-        opts.cropOffsetTop
+        opts.cropOffsetTop,
+        opts.timestamps,
     ]);
 
     var execOpts = {
