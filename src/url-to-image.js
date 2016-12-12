@@ -40,15 +40,25 @@ function renderPage(opts) {
     var forceRenderTimeout;
     var dynamicRenderTimeout;
     var firstResponseFlag = false;
+    var pageReadyState = false;
+    var htmlLoadedTime;
+    var pageReadyTime;
+    var beginRenderingTime;
+    var waitBeforeRender = 0;
+    var minimumWaitingTime = 500;
+    var waitInterval;
     var successCallbacks = 0;
     var page = webPage.create();
+    
     page.viewportSize = {
         width: opts.width,
         height: opts.height
     };
+    
     // Silence confirmation messages and errors
     page.onConfirm = page.onPrompt = function noOp() {
     };
+    
     page.onError = function (err) {
         log('Page error:', err);
     };
@@ -135,18 +145,18 @@ function renderPage(opts) {
     // Wait for frame to solve the about:blank frame access complaint
     function waitForFrameToRender(interval) {
         if (typeof interval === 'undefined') {
-            interval = 1000;
+            interval = minimumWaitingTime;
         }
+
+        log('Waiting for frame (' + interval + 'ms)...');
 
         setTimeout(function () {
             renderAndExit();
         }, interval);
-
-
     }
 
     function renderAndExit() {
-        log('Render screenshot..');
+        log('Waiting to start rendering...');
         if (opts.cropWidth && opts.cropHeight) {
             log("Cropping...");
             page.clipRect = {
@@ -173,21 +183,42 @@ function renderPage(opts) {
             oldOpts.fileType = opts.fileType;
         }
 
+        elapsedTime = getElapsedTime();
+        waitBeforeRender = Number(opts.requestTimeout);        
+
+        log('Waiting ' + waitBeforeRender + 'ms before rendering image...');
+        log('DEBUG:', 'Should grab screenshot at', (elapsedTime + waitBeforeRender) + 'ms');
+
+        waitInterval = setInterval(function() {
+            log('...still waiting...');
+        }, 1000);
+
         var count = 0;
         setInterval(function () {
+            clearTimeout(waitInterval); // stop outputting 'still waiting' messages
+            beginRenderingTime = getElapsedTime();
+            log('...timeout completed, starting rendering image...');
+
             if (count > opts.maxTimeout / opts.requestTimeout) {
                 log('timeout.');
                 exit(1);
             }
 
             if (page.render(opts.filePath, renderOpts) || page.render(opts.filePath, oldOpts)) {
+                elapsedTime = getElapsedTime();
                 page.close();
-                log('done.');
+
+                log('Done rendering image:', opts.filePath);
+                log('DEBUG:', 'PhantomJS rendering time', (elapsedTime - beginRenderingTime), 'ms');
+
                 exit();
             }
 
+            log('DEBUG:', 'Total processing time:', getElapsedTime(), 'ms');            
+            log('All done, exiting PhantomJS');
+
             count++;
-        }, opts.requestTimeout);
+        }, waitBeforeRender);
     }
 }
 //custom exit function
