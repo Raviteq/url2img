@@ -182,6 +182,7 @@ function renderPage(opts) {
 
         var oldOpts = {
             fileQuality: opts.fileQuality,
+            quality: opts.fileQuality, // required! will fall back to 75 quality (phantom default) unless specified
             fileType: 'png',
         };
 
