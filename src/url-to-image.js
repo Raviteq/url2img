@@ -40,6 +40,7 @@ function renderPage(opts) {
     var forceRenderTimeout;
     var dynamicRenderTimeout;
     var firstResponseFlag = false;
+    var completedRequests = [];
     var pageReadyState = false;
     var htmlLoadedTime;
     var pageReadyTime;
@@ -64,7 +65,7 @@ function renderPage(opts) {
     };
 
     page.onConsoleMessage = function(msg, lineNum, sourceId) {
-      log('CONSOLE: ' + msg + ' (from line #' + lineNum + ' in "' + sourceId + '")');
+        log('CONSOLE: ' + msg);
     };
 
     page.onResourceRequested = function (request) {
@@ -74,7 +75,14 @@ function renderPage(opts) {
     };
 
     page.onResourceReceived = function (response) {
-        log('<-', response.status, response.url);
+        var responseString = '[' + response.status + '] ' + response.url;
+
+        // avoid logging the same request multiple times
+        if(completedRequests.indexOf(responseString) === -1) {
+            log('<-', response.status, response.url);
+            completedRequests.push(responseString);
+        }
+
         if (!response.stage || response.stage === 'end') {
             // start force rendering timer now that we have a 200 response
             if (firstResponseFlag === true && response.status == 200) {
