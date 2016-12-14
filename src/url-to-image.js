@@ -28,6 +28,7 @@ function main() {
         cropOffsetLeft: args[12] ? args[12] : 0,
         cropOffsetTop: args[13] ? args[13] : 0,
         timestamps: args[14] ? args[14] : 0,
+        wait: args[15] ? args[15] : 0,
     };
 
     renderPage(opts);

@@ -35,6 +35,7 @@ function render(url, filePath, opts) {
         opts.cropOffsetLeft,
         opts.cropOffsetTop,
         opts.timestamps,
+        opts.wait,
     ]);
 
     var execOpts = {
