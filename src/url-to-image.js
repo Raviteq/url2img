@@ -30,6 +30,7 @@ function main() {
         cropOffsetTop: args[13] ? args[13] : 0,
         timestamps: args[14] ? args[14] : 0,
         wait: args[15] ? args[15] : 0,
+        script: args[16] ? args[16] : 0,
     };
 
     renderPage(opts);
@@ -58,7 +59,7 @@ function renderPage(opts) {
     var checkingInterval = 100;
     var numChecks = 0;
     var page = webPage.create();
-    
+
     page.viewportSize = {
         width: opts.width,
         height: opts.height
