@@ -17,6 +17,7 @@ var defaultOpts = {
     cropOffsetLeft: 0,
     cropOffsetTop: 0,
     timestamps: false,
+    wait: 0,
     phantomArguments: '--ignore-ssl-errors=true'
 };
 
@@ -111,6 +112,12 @@ function getUserOpts() {
         describe: 'Show millisecond timestamps in log events.',
         default: defaultOpts.timestamps,
         type: 'boolean'
+    })
+    .option('wait', {
+        describe: 'After the page is completely ready, wait this interval' +
+                  ' before grabbing the snapshot.',
+        default: defaultOpts.wait,
+        type: 'string'
     })
     .help('h')
     .alias('h', 'help')
