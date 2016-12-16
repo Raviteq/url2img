@@ -43,20 +43,26 @@ function renderPage(opts) {
     var firstResponseFlag = false;
     var completedRequests = [];
     var pageReadyState = false;
+    var readyState = false;
+    var limiterVar;
     var htmlLoadedTime;
     var pageReadyTime;
     var beginRenderingTime;
     var waitBeforeRender = 0;
     var minimumWaitingTime = 500;
+    var pageCheckInterval;
+    var checkCheckInterval;
     var waitInterval;
     var successCallbacks = 0;
+    var checkingInterval = 100;
+    var numChecks = 0;
     var page = webPage.create();
     
     page.viewportSize = {
         width: opts.width,
         height: opts.height
     };
-    
+
     // Silence confirmation messages and errors
     page.onConfirm = page.onPrompt = function noOp() {
     };
@@ -114,7 +120,9 @@ function renderPage(opts) {
         }
     };
 
-    page.open(opts.url);
+    page.open(opts.url, function (status) {
+        startReadyStateCheck();
+    });
 
 
     function log() {
@@ -134,9 +142,43 @@ function renderPage(opts) {
             });
 
             if(opts.timestamps === 'true') str = (getElapsedTime() / 1000).toFixed(3) + ': ' + str;
-
             console.log(str);
         }
+    }
+
+    function checkReadyState() {
+        log('Checking readyState, checked', (numChecks++), 'times, readyState? ', readyState);
+        
+        if(pageReadyState === true) {
+            clearTimeout(checkCheckInterval);
+            return true;
+        } else {
+            readyState = checkDocumentReadyState(); // determine page readyState
+            if(readyState === true) onPageReady();
+        }
+    }
+
+    function onPageReady() {
+        if(readyState === true && limiterVar !== 'test') {
+            log('==>', 'Got page readyState!');
+            pageReadyState = true;
+            pageReadyTime = getElapsedTime();
+            clearTimeout(pageCheckInterval);
+            clearTimeout(checkCheckInterval);
+            limiterVar = 'test';
+        }
+    }
+
+    function startReadyStateCheck() {
+        if(pageReadyState !== true && !limiterVar) {
+            checkCheckInterval = setInterval(checkReadyState, checkingInterval);
+        }
+    }
+
+    function checkDocumentReadyState() {
+        return page.evaluate(function() {
+            return document.readyState === 'complete';
+        });
     }
 
     function getElapsedTime() {
