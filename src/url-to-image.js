@@ -8,6 +8,7 @@
 // Phantom internals
 var system = require('system');
 var webPage = require('webpage');
+var fs = require('fs');
 
 function main() {
     // I tried to use yargs as a nicer commandline option parser but
