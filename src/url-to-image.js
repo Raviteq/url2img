@@ -167,7 +167,11 @@ function renderPage(opts) {
             clearTimeout(checkCheckInterval);
             return true;
         } else {
-            readyState = checkDocumentReadyState(); // determine page readyState
+            readyState = (externalScript && typeof externalScript.callback === 'function') 
+                ? externalScript.callback(page)
+                : checkDocumentReadyState()
+            ;
+
             if(readyState === true) onPageReady();
         }
     }
