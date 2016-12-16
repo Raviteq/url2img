@@ -58,7 +58,19 @@ function renderPage(opts) {
     var successCallbacks = 0;
     var checkingInterval = 100;
     var numChecks = 0;
+    var externalScript;
     var page = webPage.create();
+
+    if(opts.script !== 'false') {
+        var scriptPath = system.env.PWD + '/src/' + opts.script + '.js';
+        if(fs.exists(scriptPath)) {
+            log('Loading script:', scriptPath);
+            externalScript = require(opts.script);
+            if(typeof externalScript.start === 'function') externalScript.start();
+        } else {
+            log('Script not found @', scriptPath);
+        }
+    }
 
     page.viewportSize = {
         width: opts.width,
