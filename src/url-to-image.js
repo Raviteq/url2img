@@ -62,10 +62,16 @@ function renderPage(opts) {
     var page = webPage.create();
 
     if(opts.script !== 'false') {
-        var scriptPath = system.env.PWD + '/src/' + opts.script + '.js';
+        var scriptPath = (opts.script[0] === '.')
+            ? system.env.PWD + 'src/' + opts.script.replace('./', '/')
+            : opts.script
+        ;
+        
+        if(scriptPath.indexOf('.js') == 0) scriptPath += '.js';
+
         if(fs.exists(scriptPath)) {
             log('Loading script:', scriptPath);
-            externalScript = require(opts.script);
+            externalScript = require(scriptPath);
             if(typeof externalScript.start === 'function') externalScript.start();
         } else {
             log('Script not found @', scriptPath);
@@ -303,5 +309,4 @@ function exit(code) {
 function isString(value) {
     return typeof value == 'string'
 }
-
 main();
