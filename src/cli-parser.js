@@ -18,6 +18,7 @@ var defaultOpts = {
     cropOffsetTop: 0,
     timestamps: false,
     wait: 0,
+    script: false,
     phantomArguments: '--ignore-ssl-errors=true'
 };
 
@@ -117,6 +118,11 @@ function getUserOpts() {
         describe: 'After the page is completely ready, wait this interval' +
                   ' before grabbing the snapshot.',
         default: defaultOpts.wait,
+        type: 'string'
+    })
+    .option('script', {
+        describe: 'Provide an external script',
+        default: defaultOpts.script,
         type: 'string'
     })
     .help('h')

@@ -8,6 +8,7 @@
 // Phantom internals
 var system = require('system');
 var webPage = require('webpage');
+var fs = require('fs');
 
 function main() {
     // I tried to use yargs as a nicer commandline option parser but
@@ -29,6 +30,7 @@ function main() {
         cropOffsetTop: args[13] ? args[13] : 0,
         timestamps: args[14] ? args[14] : 0,
         wait: args[15] ? args[15] : 0,
+        script: args[16] ? args[16] : 0,
     };
 
     renderPage(opts);
@@ -43,20 +45,44 @@ function renderPage(opts) {
     var firstResponseFlag = false;
     var completedRequests = [];
     var pageReadyState = false;
+    var readyState = false;
+    var limiterVar;
     var htmlLoadedTime;
     var pageReadyTime;
     var beginRenderingTime;
     var waitBeforeRender = 0;
     var minimumWaitingTime = 500;
+    var pageCheckInterval;
+    var checkCheckInterval;
     var waitInterval;
     var successCallbacks = 0;
+    var checkingInterval = 100;
+    var numChecks = 0;
+    var externalScript;
     var page = webPage.create();
-    
+
+    if(opts.script !== 'false') {
+        var scriptPath = (opts.script[0] === '.')
+            ? system.env.PWD + 'src/' + opts.script.replace('./', '/')
+            : opts.script
+        ;
+        
+        if(scriptPath.indexOf('.js') == 0) scriptPath += '.js';
+
+        if(fs.exists(scriptPath)) {
+            log('Loading script:', scriptPath);
+            externalScript = require(scriptPath);
+            if(typeof externalScript.start === 'function') externalScript.start();
+        } else {
+            log('Script not found @', scriptPath);
+        }
+    }
+
     page.viewportSize = {
         width: opts.width,
         height: opts.height
     };
-    
+
     // Silence confirmation messages and errors
     page.onConfirm = page.onPrompt = function noOp() {
     };
@@ -114,7 +140,9 @@ function renderPage(opts) {
         }
     };
 
-    page.open(opts.url);
+    page.open(opts.url, function (status) {
+        startReadyStateCheck();
+    });
 
 
     function log() {
@@ -134,9 +162,47 @@ function renderPage(opts) {
             });
 
             if(opts.timestamps === 'true') str = (getElapsedTime() / 1000).toFixed(3) + ': ' + str;
-
             console.log(str);
         }
+    }
+
+    function checkReadyState() {
+        log('Checking readyState, checked', (numChecks++), 'times, readyState? ', readyState);
+        
+        if(pageReadyState === true) {
+            clearTimeout(checkCheckInterval);
+            return true;
+        } else {
+            readyState = (externalScript && typeof externalScript.callback === 'function') 
+                ? externalScript.callback(page)
+                : checkDocumentReadyState()
+            ;
+
+            if(readyState === true) onPageReady();
+        }
+    }
+
+    function onPageReady() {
+        if(readyState === true && limiterVar !== 'test') {
+            log('==>', 'Got page readyState!');
+            pageReadyState = true;
+            pageReadyTime = getElapsedTime();
+            clearTimeout(pageCheckInterval);
+            clearTimeout(checkCheckInterval);
+            limiterVar = 'test';
+        }
+    }
+
+    function startReadyStateCheck() {
+        if(pageReadyState !== true && !limiterVar) {
+            checkCheckInterval = setInterval(checkReadyState, checkingInterval);
+        }
+    }
+
+    function checkDocumentReadyState() {
+        return page.evaluate(function() {
+            return document.readyState === 'complete';
+        });
     }
 
     function getElapsedTime() {
@@ -243,5 +309,4 @@ function exit(code) {
 function isString(value) {
     return typeof value == 'string'
 }
-
 main();
