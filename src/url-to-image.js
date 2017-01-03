@@ -63,11 +63,11 @@ function renderPage(opts) {
 
     if(opts.script !== 'false') {
         var scriptPath = (opts.script[0] === '.')
-            ? system.env.PWD + 'src/' + opts.script.replace('./', '/')
+            ? system.env.PWD + 'src/' + opts.script.replace('./', '')
             : opts.script
         ;
         
-        if(scriptPath.indexOf('.js') == 0) scriptPath += '.js';
+        if(scriptPath.indexOf('.js') < 1) scriptPath += '.js';
 
         if(fs.exists(scriptPath)) {
             log('Loading script:', scriptPath);
