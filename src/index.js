@@ -45,6 +45,13 @@ function render(url, filePath, opts) {
 
     var killTimer;
     return new Promise(function(resolve, reject) {
+
+        // debug options
+        console.log(opts);
+        console.log('>>>>');
+        console.log(args);
+        console.log('<<<<');
+
         var child;
         killTimer = setTimeout(function() {
             killPhantom(opts, child)

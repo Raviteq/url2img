@@ -63,11 +63,11 @@ function renderPage(opts) {
 
     if(opts.script !== 'false') {
         var scriptPath = (opts.script[0] === '.')
-            ? system.env.PWD + 'src/' + opts.script.replace('./', '/')
+            ? system.env.PWD + 'src/' + opts.script.replace('./', '')
             : opts.script
         ;
         
-        if(scriptPath.indexOf('.js') == 0) scriptPath += '.js';
+        if(scriptPath.indexOf('.js') < 1) scriptPath += '.js';
 
         if(fs.exists(scriptPath)) {
             log('Loading script:', scriptPath);
@@ -249,7 +249,8 @@ function renderPage(opts) {
 
         var oldOpts = {
             fileQuality: opts.fileQuality,
-            quality: opts.fileQuality, // required! will fall back to 75 quality (phantom default) unless specified
+            // quality: opts.fileQuality, // required! will fall back to 75 quality (phantom default) unless specified
+            quality: 100, // force 100% jpeg quality
             fileType: 'png',
         };
 
