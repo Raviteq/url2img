@@ -9,6 +9,7 @@
 var system = require('system');
 var webPage = require('webpage');
 var fs = require('fs');
+var color = require('./color.js');
 
 function main() {
     // I tried to use yargs as a nicer commandline option parser but
@@ -92,11 +93,11 @@ function renderPage(opts) {
     };
 
     page.onConsoleMessage = function(msg, lineNum, sourceId) {
-        log('CONSOLE: ' + msg);
+        log(color.cyan('CONSOLE:'), msg);
     };
 
     page.onResourceRequested = function (request) {
-        log('->', request.method, request.url);
+        log(color.cyan('▶'), color.dim(request.method), request.url);
         requestCount += 1;
         clearTimeout(dynamicRenderTimeout);
     };
@@ -106,7 +107,7 @@ function renderPage(opts) {
 
         // avoid logging the same request multiple times
         if(completedRequests.indexOf(responseString) === -1) {
-            log('<-', response.status, response.url);
+            log(color.magenta('◀'), color.dim(response.status), response.url);
             completedRequests.push(responseString);
         }
 
@@ -120,7 +121,6 @@ function renderPage(opts) {
             requestCount -= 1;
             if (requestCount === 0 && successCallbacks === 0) {
                 dynamicRenderTimeout = setTimeout(beginRenderAndExit, opts.requestTimeout);
-
             }
         }
     };
@@ -161,7 +161,7 @@ function renderPage(opts) {
                 str += ' '
             });
 
-            if(opts.timestamps === 'true') str = (getElapsedTime() / 1000).toFixed(3) + ': ' + str;
+            if(opts.timestamps === 'true') str = color.dim((getElapsedTime() / 1000).toFixed(3) + ' ') + str;
             console.log(str);
         }
     }
@@ -184,7 +184,7 @@ function renderPage(opts) {
 
     function onPageReady() {
         if(readyState === true && limiterVar !== 'test') {
-            log('==>', 'Got page readyState!');
+            log(color.green('Got page readyState!'));
             pageReadyState = true;
             pageReadyTime = getElapsedTime();
             clearTimeout(pageCheckInterval);
@@ -264,7 +264,7 @@ function renderPage(opts) {
         waitBeforeRender = Number(opts.requestTimeout);        
 
         log('Waiting ' + waitBeforeRender + 'ms before rendering image...');
-        log('DEBUG:', 'Should grab screenshot at', (elapsedTime + waitBeforeRender) + 'ms');
+        log(color.yellow('DEBUG:'), 'Should grab screenshot at', (elapsedTime + waitBeforeRender) + 'ms');
 
         waitInterval = setInterval(function() {
             log('...still waiting...');
@@ -286,12 +286,12 @@ function renderPage(opts) {
                 page.close();
 
                 log('Done rendering image:', opts.filePath);
-                log('DEBUG:', 'PhantomJS rendering time', (elapsedTime - beginRenderingTime), 'ms');
+                log(color.yellow('DEBUG:'), 'PhantomJS rendering time', (elapsedTime - beginRenderingTime), 'ms');
 
                 exit();
             }
 
-            log('DEBUG:', 'Total processing time:', getElapsedTime(), 'ms');            
+            log(color.yellow('DEBUG:'), 'Total processing time:', getElapsedTime(), 'ms');
             log('All done, exiting PhantomJS');
 
             count++;
