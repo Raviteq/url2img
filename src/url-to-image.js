@@ -208,6 +208,12 @@ function renderPage(opts) {
         });
     }
 
+    function isAdrapid() {
+        return page.evaluate(function() {
+            return typeof timeline !== 'undefined';
+        });
+    }
+
     function getElapsedTime() {
         return Date.now() - startTime;
     }
