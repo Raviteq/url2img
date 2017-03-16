@@ -61,6 +61,7 @@ function renderPage(opts) {
     var numChecks = 0;
     var externalScript;
     var maxUrlLength = 128;
+    var isAdRapid = false;
     var page = webPage.create();
 
     if(opts.script !== 'false') {
@@ -189,6 +190,7 @@ function renderPage(opts) {
         if(readyState === true && limiterVar !== 'test') {
             log(color.green('Got page readyState!'));
             pageReadyState = true;
+            isAdRapid = isAdrapid(); // determine if the banner is an AdRapid banner
             pageReadyTime = getElapsedTime();
             clearTimeout(pageCheckInterval);
             clearTimeout(checkCheckInterval);
@@ -215,9 +217,9 @@ function renderPage(opts) {
     }
 
     function seekAdRapid(ms) {
-        return page.evaluate(function() {
+        return page.evaluate(function(ms) {
             return timeline.seek(ms/1000).stop();
-        });
+        }, ms);
     }
 
     function getElapsedTime() {
@@ -277,6 +279,12 @@ function renderPage(opts) {
 
         elapsedTime = getElapsedTime();
         waitBeforeRender = Number(opts.requestTimeout);        
+
+        if(isAdRapid) {
+            log('AdRapid banner, seeking to ' + waitBeforeRender + ' ...');
+            seekAdRapid(waitBeforeRender); // navigate in timeline in the banner
+            waitBeforeRender = 0; // since we do not need to wait manually, reset the waiting timeout
+        }
 
         log('Waiting ' + waitBeforeRender + 'ms before rendering image...');
         log(color.yellow('DEBUG:'), 'Should grab screenshot at', (elapsedTime + waitBeforeRender) + 'ms');
