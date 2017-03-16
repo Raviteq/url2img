@@ -55,7 +55,7 @@ function render(url, filePath, opts) {
         var child;
         killTimer = setTimeout(function() {
             killPhantom(opts, child)
-            reject(new Error('Phantomjs process timeout'));
+            reject('PhantomJS process timeout');
         }, opts.killTimeout);
 
         try {
@@ -77,7 +77,7 @@ function render(url, filePath, opts) {
             if (exitCode > 0) {
                 var err;
                 if (exitCode === 10) {
-                    err = new Error('Unable to load given url: ' + url);
+                    err = 'Unable to load url: ' + url;
                 }
                 reject(err);
             } else {
