@@ -60,6 +60,7 @@ function renderPage(opts) {
     var checkingInterval = 100;
     var numChecks = 0;
     var externalScript;
+    var maxUrlLength = 128;
     var page = webPage.create();
 
     if(opts.script !== 'false') {
@@ -97,6 +98,7 @@ function renderPage(opts) {
     };
 
     page.onResourceRequested = function (request) {
+        if(request.url.length > maxUrlLength) request.url = request.url.substring(0, maxUrlLength) + '[...]';
         log(color.cyan('▶'), color.dim(request.method), request.url);
         requestCount += 1;
         clearTimeout(dynamicRenderTimeout);
@@ -107,6 +109,7 @@ function renderPage(opts) {
 
         // avoid logging the same request multiple times
         if(completedRequests.indexOf(responseString) === -1) {
+            if(response.url.length > maxUrlLength) response.url = response.url.substring(0, maxUrlLength) + '[...]';
             log(color.magenta('◀'), color.dim(response.status), response.url);
             completedRequests.push(responseString);
         }
