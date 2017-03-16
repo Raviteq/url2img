@@ -214,6 +214,12 @@ function renderPage(opts) {
         });
     }
 
+    function seekAdRapid(ms) {
+        return page.evaluate(function() {
+            return timeline.seek(ms/1000).stop();
+        });
+    }
+
     function getElapsedTime() {
         return Date.now() - startTime;
     }
